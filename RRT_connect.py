@@ -43,7 +43,7 @@ def extend_RRT(RRT,joints,q):
     q_near_index = neigh.kneighbors(q,return_distance=False)
     q_near = joints[q_near_index]
 
-    if np.norm(q - q_near) < eps:
+    if np.linalg.norm(q - q_near) < eps:
         q_new = q
 
          # Status codes: 
