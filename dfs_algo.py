@@ -4,29 +4,37 @@ import random as rand
 
 def dfs(graph: List[List[int]], start: int , goal: int)->list[int]:
     n_nodes = len(graph)
-    visited = np.zeros(n_nodes, dtype=bool)
+    visited = set()
     
-    def transverse(graph: List[List[int]], visited,  index: int):
-    
-        list_copy = graph[index].copy()
-        for node in list_copy:
+    def transverse(graph: List[List[int]], visited: set,  index: int, path=None):
+        if not path:
+            path = [index]
+            visited = {index}
 
-            if visited[node]:
-                graph[index].remove(node)
+        for node in graph[index]:
+
+            if node in visited:
                 continue
             
-            elif node == goal:
-                path = []
-                j=0
-                while graph[j][0] != goal:
-                    path.append(graph[j][0])
-                    j += 1
-                path.append(goal)
+            path.append(node)
+            visited.add(node)
+            if node == goal:
                 return path
+            else: 
+                return transverse(graph, visited, node, path)
+        
+        # if all nodes are visited we go 1 step back the tree and try new branch
+        path.pop()
+        return transverse(graph, visited, path[-1], path)
 
-            visited[node] = True
-            transverse(graph, visited, node)
-        return  #if the list is empty
+    return transverse(graph, visited, start)
 
 if __name__=="__main__":
-    
+    test = [
+        [5, 0, 1],
+        [1, 2],
+        [2, 3],
+        [0, 3, 4,],
+        [3],
+        [0]]
+    print(dfs(test, 0, 4))
