@@ -29,7 +29,7 @@ def build_RRT(q_init):
 
     for k in range(K):
         q_rand = random_config(dof)
-        status, RRT, joints = extend_RRT(q_rand,RRT,joints,num_nodes,eps)
+        status, RRT, joints = extend_RRT(RRT,q_rand,joints)
     
     return RRT, joints
 
@@ -43,23 +43,38 @@ def extend_RRT(RRT,q,joints):
     neigh.fit(joints)
     q_near_index = neigh.kneighbors(q,return_distance=False)
     q_near = joints[q_near_index]
-    q_new = q_near + eps * (q - q_near)
- 
-    # Status codes: 
-    if com.hasCollision(q_new):
-        print('Trapped')
-        status = 2
 
-    else: # Add new node to tree
-        joints.append = q_new
+    if np.norm(q - q_near) < eps:
+        q_new = q
 
-        # Record parent node of newly added vertex
-        RRT.append(q_near_index)
-
-        if q_new == q:
+         # Status codes: 
+        if com.hasCollision(q_new):
+            print('Trapped')
+            status = 2
+        else:
             print('Reached')
             status = 0
-        else: 
+
+            # Add new node to tree
+            joints.append(q_new)
+
+            # Record parent node of newly added vertex
+            RRT.append(q_near_index)
+
+    else: 
+        q_new = q_near + eps * (q - q_near)
+
+         # Status codes: 
+        if com.hasCollision(q_new):
+            print('Trapped')
+            status = 2
+
+        else: # Add new node to tree
+            joints.append(q_new)
+
+            # Record parent node of newly added vertex
+            RRT.append(q_near_index)
+
             print('Advanced')
             status = 1
 
@@ -70,3 +85,17 @@ def connect(RRT,q,joints):
     while status != 1:
         status, RRT, joints = extend_RRT(RRT,q,joints)
     return status
+
+def RRT_connect_planner(q_init,q_goal):
+    RRT_a, joints_a = build_RRT(q_init)
+    RRT_b, joints_b = build_RRT(q_goal)
+
+    for k in range(K):
+        q_rand = random_config(dof)
+        RRT1 = RRT_a
+        RRT2 = RRT_b
+
+        status, RRT_a, joints_a = extend_RRT(RRT,q_rand,joints)
+        if status != 2:
+            if connect
+
