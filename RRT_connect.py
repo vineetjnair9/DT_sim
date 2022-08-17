@@ -5,7 +5,7 @@ from pylib import Communication
 com = Communication()
 
 # Hyperparameters
-K = 100 # no. of iterations
+K = 5 # no. of iterations
 eps = 0.01
 dof = 6
 
