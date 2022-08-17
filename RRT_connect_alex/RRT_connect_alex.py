@@ -104,4 +104,4 @@ def RRT_connect_planner(q_init: NDArray, q_goal: NDArray, max_iter):
 
 
 if __name__ == '__main__':
-   com._mainLoop(RRT_connect_planner())
+   com._mainLoop(RRT_connect_planner)
