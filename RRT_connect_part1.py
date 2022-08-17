@@ -64,4 +64,3 @@ def extend_RRT(q,RRT,joints,eps):
             status = 1
 
     return status, RRT, joints
-
