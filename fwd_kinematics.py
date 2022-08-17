@@ -16,11 +16,11 @@ def fwd_kinematics(pose: ArrayLike) -> NDArray:
         return np.array([
             [np.cos(theta), -np.sin(theta), 0, a],
             [np.sin(theta)*np.cos(alpha), np.cos(theta)*np.cos(alpha), - np.sin(alpha), -np.sin(alpha)*d],
-            [np.sin(theta)*np.sin(alpha), np.cos(theta)*np.sin(alpha), - np.cos(alpha), -np.cos(alpha)*d],
+            [np.sin(theta)*np.sin(alpha), np.cos(theta)*np.sin(alpha), np.cos(alpha), np.cos(alpha)*d],
             [0, 0, 0, 1]])
 
-    a = np.array([0, -0.24355, -0.2132, 0, 0, 0])
-    d = np.array([0.15185, 0, 0, 0.13105, 0.08535, 0.0921])
+    a = np.array([0, -0.425, -0.3922, 0, 0, 0])
+    d = np.array([0.1625, 0, 0, 0.1333, 0.0997, 0.0996])
     alpha = np.array([np.pi/2, 0, 0, np.pi/2, -np.pi/2, 0])
     loc_ep_pos = np.array([0, 0, 0, 1])  # position of end effector is at the position of it cs
 
