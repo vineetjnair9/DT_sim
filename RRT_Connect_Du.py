@@ -8,7 +8,7 @@ from typing import List
 import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
-from fw_kinematic import fwd_kinematics
+from fwd_kinematics import *
 
 JointValues = List[float]
 JointValuesList = List[JointValues]
