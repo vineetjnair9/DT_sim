@@ -45,13 +45,14 @@ def extend_RRT(RRT,joints,q):
     else:
         neigh.fit(joints_fit)
     q_near_index = neigh.kneighbors(np.array(q).reshape(1,-1),return_distance=False)
+    q_near_index = int(q_near_index[0][0])
     q_near = joints[q_near_index]
 
     if np.linalg.norm(q - q_near) < eps:
         q_new = q
 
          # Status codes: 
-        if com.hasCollision(q_new):
+        if com.hasCollision(q_new.tolist()):
             print('Trapped')
             status = 2
         else:
@@ -68,7 +69,7 @@ def extend_RRT(RRT,joints,q):
         q_new = q_near + eps * (q - q_near)
 
          # Status codes: 
-        if com.hasCollision(q_new):
+        if com.hasCollision(q_new.tolist()):
             print('Trapped')
             status = 2
 
