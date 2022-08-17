@@ -2,7 +2,7 @@ import numpy as np
 import math
 from sklearn.neighbors import NearestNeighbors
 from pylib import Communication
-# com = Communication()
+com = Communication()
 
 # Hyperparameters
 K = 100 # no. of iterations
@@ -23,7 +23,6 @@ def build_RRT(q_init):
     joints = []
 
     # Starting point (root node)
-    num_nodes = 1
     joints.append(q_init)
     RRT.append(0) # parent of root is itself
 
