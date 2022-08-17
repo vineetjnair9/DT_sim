@@ -6,13 +6,15 @@ def dfs(graph: List[List[int]], start: int , goal: int)->list[int]:
     visited = np.zeros(n_nodes, dtype=bool)
     
     def transverse(graph: List[List[int]], visited,  index: int):
+    
 
         for i, node in enumerate(graph[index]):
 
             if visited[node]:
                 graph[index].remove(i)
-            else:
-                visited[node] = True
+                continue
+            
+            visited[node] = True
             
 
             if node == goal:
@@ -27,3 +29,5 @@ def dfs(graph: List[List[int]], start: int , goal: int)->list[int]:
             elif node:
                 graph[index].remove(node)
             transverse(graph[node])
+        
+        return
