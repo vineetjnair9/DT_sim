@@ -2,7 +2,7 @@ import numpy as np
 import math
 from sklearn.neighbors import NearestNeighbors
 from pylib import Communication
-com = Communication()
+# com = Communication()
 
 # Hyperparameters
 K = 100 # no. of iterations
@@ -24,8 +24,8 @@ def build_RRT(q_init):
 
     # Starting point (root node)
     num_nodes = 1
-    joints[0] = q_init
-    RRT[0] = 0 # parent of root is itself
+    joints.append(q_init)
+    RRT.append(0) # parent of root is itself
 
     for k in range(K):
         q_rand = random_config(dof)
@@ -110,3 +110,7 @@ def RRT_connect_planner(q_init,q_goal):
         joints2 = joints1
     print('Failure')
     return
+
+q_init = [-2.088896595860315, -2.017484530838456, -1.611079074071187, -0.07048029509520992, 0.5640853634948029, -1.093268836863869]
+q_goal = [-1.1862522062110772, -1.6803693959628347, -2.2637243080183618, -0.7820281405620721, 1.6033439459250105, 0.38341871361603497]
+RRT_connect_planner(q_init,q_goal)
