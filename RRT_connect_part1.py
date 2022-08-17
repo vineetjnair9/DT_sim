@@ -8,14 +8,15 @@ def random_config(dof):
     rng = np.random.default_rng(seed=42)
     return rng.uniform(low=-math.pi,high=math.pi,size=dof)
 
-def build_RRT(q_init,params):
+def build_RRT(q_init):
     # Returns 2 outputs
     # RRT = list showing parent node of each node/vertex in tree
     # joints = joint angles/configurations of each node in tree
     
-    K = params.K # no. of iterations
-    eps = params.eps
-    dof = params.dof
+    # Hyperparameters
+    K = 100 # no. of iterations
+    eps = 0.01
+    dof = 6
 
     # Create list to show parent nodes of each node/vertex
     RRT = []
