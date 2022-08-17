@@ -39,7 +39,10 @@ def extend_RRT(RRT,joints,q):
     # joints = joint angles/configurations of each node in tree
 
     neigh = NearestNeighbors(n_neighbors=1)
-    neigh.fit(joints)
+    if len(joints) == 1:
+        neigh.fit(joints.reshape(1,-1))
+    else:
+        neigh.fit(joints)
     q_near_index = neigh.kneighbors(q,return_distance=False)
     q_near = joints[q_near_index]
 
