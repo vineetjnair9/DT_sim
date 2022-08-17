@@ -5,7 +5,7 @@ from pylib import Communication
 com = Communication()
 
 # Hyperparameters
-K = 100 # no. of iterations
+K = 5 # no. of iterations
 eps = 0.01
 dof = 6
 
@@ -44,14 +44,15 @@ def extend_RRT(RRT,joints,q):
         neigh.fit(joints_fit.reshape(1,-1))
     else:
         neigh.fit(joints_fit)
-    q_near_index = neigh.kneighbors(q,return_distance=False)
+    q_near_index = neigh.kneighbors(np.array(q).reshape(1,-1),return_distance=False)
+    q_near_index = int(q_near_index[0][0])
     q_near = joints[q_near_index]
 
-    if np.norm(q - q_near) < eps:
+    if np.linalg.norm(q - q_near) < eps:
         q_new = q
 
          # Status codes: 
-        if com.hasCollision(q_new):
+        if com.hasCollision(q_new.tolist()):
             print('Trapped')
             status = 2
         else:
@@ -68,7 +69,7 @@ def extend_RRT(RRT,joints,q):
         q_new = q_near + eps * (q - q_near)
 
          # Status codes: 
-        if com.hasCollision(q_new):
+        if com.hasCollision(q_new.tolist()):
             print('Trapped')
             status = 2
 
