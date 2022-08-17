@@ -29,11 +29,11 @@ def build_RRT(q_init):
 
     for k in range(K):
         q_rand = random_config(dof)
-        status, RRT, joints = extend_RRT(RRT,q_rand,joints)
+        status, RRT, joints, q_new = extend_RRT(RRT,joints,q_rand)
     
     return RRT, joints
 
-def extend_RRT(RRT,q,joints):
+def extend_RRT(RRT,joints,q):
     # Returns 3 outputs
     # status = 0 (Reached), 1 (Advanced) or 2 (Trapped)
     # RRT = list showing parent node of each node/vertex in tree
@@ -78,24 +78,36 @@ def extend_RRT(RRT,q,joints):
             print('Advanced')
             status = 1
 
-    return status, RRT, joints
+    return status, RRT, joints, q_new
 
 def connect(RRT,q,joints):
     status = 0
     while status != 1:
-        status, RRT, joints = extend_RRT(RRT,q,joints)
-    return status
+        status, RRT, joints, q_new = extend_RRT(RRT,joints,q)
+    return status, RRT, joints
 
 def RRT_connect_planner(q_init,q_goal):
     RRT_a, joints_a = build_RRT(q_init)
     RRT_b, joints_b = build_RRT(q_goal)
 
+    RRT1 = RRT_a
+    RRT2 = RRT_b
+    joints1 = joints_a
+    joints2 = joints_b
+
     for k in range(K):
         q_rand = random_config(dof)
-        RRT1 = RRT_a
-        RRT2 = RRT_b
 
-        status, RRT_a, joints_a = extend_RRT(RRT,q_rand,joints)
-        if status != 2:
-            if connect
+        status1, RRT1, joints1, q_new = extend_RRT(RRT1,joints1,q_rand)
+        if status1 != 2:
+            status2, RRT2, joints2 = connect(RRT2,joints2,q_new)
+            if status2 == 0:
+                RRT2 = RRT2 + len(RRT1)
+                RRT = RRT1 + RRT2
+                joints = joints1 + joints2
+                return RRT, joints
+        RRT2 = RRT1
+        joints2 = joints1
+    print('Failure')
+    return
 
