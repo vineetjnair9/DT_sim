@@ -1,40 +1,47 @@
 from typing import List
 JointValues = List[float]
 JointValuesList = List[JointValues]
+import pickle
 
 from pylib import Communication
 com = Communication()
 
-def compilePath(start: JointValues, stop: JointValues) -> JointValuesList:
+def compilePath(start: JointValues, stop: JointValues, savetofile=False) -> JointValuesList:
 
-   print('start = ', start)
-   print('stop = ', stop)
-   if len(start) != 6 or len(stop) != 6:
-      print('Array length mismatch')
-      return None
+    print('start = ', start)
+    print('stop = ', stop)
+    if len(start) != 6 or len(stop) != 6:
+        print('Array length mismatch')
+        return None
 
-   poseList = list()
-   poseList.append(start)
+    poseList = list()
+    poseList.append(start)
 
-   diff = [0] * 6
-   for index in range(6):
-      diff[index] = stop[index] - start[index]
-   m = max(diff)
-   steps = int(m / 0.1)
+    diff = [0] * 6
+    for index in range(6):
+        diff[index] = stop[index] - start[index]
+    m = max(diff)
+    steps = int(m / 0.1)
 
-   for step in range(steps):
-      jointValues = [0] * 6
-      percentage = step / steps
-      for index in range(6):
-         addValue = percentage * diff[index]
-         jointValues[index] = start[index] + addValue
-      hsCol = com.hasCollision(jointValues)
-      clr = com.clearance(jointValues)
-      print(hsCol, clr)
-      poseList.append(jointValues)
+    for step in range(steps):
+        jointValues = [0] * 6
+        percentage = step / steps
+        for index in range(6):
+            addValue = percentage * diff[index]
+            jointValues[index] = start[index] + addValue
+        hsCol = com.hasCollision(jointValues)
+        clr = com.clearance(jointValues)
+        print(hsCol, clr)
+        poseList.append(jointValues)
 
-   poseList.append(stop)
-   return poseList
+    poseList.append(stop)
+    
+    # save the pose to file
+    if savetofile:
+        with open("Path", 'wb') as f:
+            pickle.dump(poseList, f)
+    
+    return poseList
 
    
 if __name__ == '__main__':
