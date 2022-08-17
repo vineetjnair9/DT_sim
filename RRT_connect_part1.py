@@ -1,6 +1,3 @@
-from ntpath import join
-from anytree import Node, RenderTree, search
-from anytree.exporter import DictExporter
 import numpy as np
 import math
 from sklearn.neighbors import NearestNeighbors
@@ -12,6 +9,10 @@ def random_config(dof):
     return rng.uniform(low=-math.pi,high=math.pi,size=dof)
 
 def build_RRT(q_init,params):
+    # Returns 2 outputs
+    # RRT = list showing parent node of each node/vertex in tree
+    # joints = joint angles/configurations of each node in tree
+    
     K = params.K # no. of iterations
     eps = params.eps
     dof = params.dof
@@ -20,34 +21,39 @@ def build_RRT(q_init,params):
     RRT = []
     joints = []
 
-    # Starting point
+    # Starting point (root node)
     num_nodes = 1
     joints[0] = q_init
-    RRT[0] = [0]
+    RRT[0] = 0 # parent of root is itself
 
     for k in range(K):
         q_rand = random_config(dof)
-        status, RRT, joints, num_nodes = extend_RRT(q_rand,RRT,joints,num_nodes,eps)
+        status, RRT, joints = extend_RRT(q_rand,RRT,joints,num_nodes,eps)
+    
+    return RRT, joints
 
-def extend_RRT(q,RRT,joints,num_nodes,eps):
+def extend_RRT(q,RRT,joints,eps):
+    # Returns 3 outputs
+    # status = 0 (Reached), 1 (Advanced) or 2 (Trapped)
+    # RRT = list showing parent node of each node/vertex in tree
+    # joints = joint angles/configurations of each node in tree
+
     neigh = NearestNeighbors(n_neighbors=1)
     neigh.fit(joints)
     q_near_index = neigh.kneighbors(q,return_distance=False)
     q_near = joints[q_near_index]
     q_new = q_near + eps * (q - q_near)
  
-    # Status codes: Reached = 0, Advanced = 1, Trapped = 2
+    # Status codes: 
     if com.hasCollision(q_new):
         print('Trapped')
         status = 2
 
     else: # Add new node to tree
-        joints[num_nodes] = q_new
+        joints.append = q_new
 
         # Record parent node of newly added vertex
         RRT.append(q_near_index)
-
-        num_nodes = num_nodes + 1
 
         if q_new == q:
             print('Reached')
@@ -56,9 +62,5 @@ def extend_RRT(q,RRT,joints,num_nodes,eps):
             print('Advanced')
             status = 1
 
-    return status, RRT, joints, num_nodes
-
-        
-
-
+    return status, RRT, joints
 
