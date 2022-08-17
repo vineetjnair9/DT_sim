@@ -1,7 +1,15 @@
 import numpy as np
-from numpy.typing import ArrayLike
+from numpy.typing import ArrayLike, NDArray
 
-def fwd_kinematics(pose: ArrayLike):
+def fwd_kinematics(pose: ArrayLike) -> NDArray:
+    """From a given joint pose, calculate the cartesian end effector position as seen from the base frame
+
+    Args:
+        pose (ArrayLike): Joint pose
+
+    Returns:
+        NDArray: Cartesian end effector position as seen from base frame
+    """
 
     # Calculates the H transformation matrix for D-H parameters
     def T(theta, a, d, alpha):
