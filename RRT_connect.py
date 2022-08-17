@@ -44,7 +44,7 @@ def extend_RRT(RRT,joints,q):
         neigh.fit(joints_fit.reshape(1,-1))
     else:
         neigh.fit(joints_fit)
-    q_near_index = neigh.kneighbors(q,return_distance=False)
+    q_near_index = neigh.kneighbors(np.array(q).reshape(1,-1),return_distance=False)
     q_near = joints[q_near_index]
 
     if np.norm(q - q_near) < eps:
