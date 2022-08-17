@@ -110,4 +110,3 @@ def RRT_connect_planner(q_init,q_goal):
         joints2 = joints1
     print('Failure')
     return
-
