@@ -16,7 +16,7 @@ def fwd_kinematics(pose: ArrayLike) -> NDArray:
         return np.array([
             [np.cos(theta), -np.sin(theta), 0, a],
             [np.sin(theta)*np.cos(alpha), np.cos(theta)*np.cos(alpha), - np.sin(alpha), -np.sin(alpha)*d],
-            [np.sin(theta)*np.sin(alpha), np.cos(theta)*np.sin(alpha), - np.cos(alpha), -np.cos(alpha)*d],
+            [np.sin(theta)*np.sin(alpha), np.cos(theta)*np.sin(alpha), np.cos(alpha), np.cos(alpha)*d],
             [0, 0, 0, 1]])
 
     a = np.array([0, -0.425, -0.3922, 0, 0, 0])
