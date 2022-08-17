@@ -4,6 +4,11 @@ from sklearn.neighbors import NearestNeighbors
 from pylib import Communication
 com = Communication()
 
+# Hyperparameters
+K = 100 # no. of iterations
+eps = 0.01
+dof = 6
+
 def random_config(dof):
     rng = np.random.default_rng(seed=42)
     return rng.uniform(low=-math.pi,high=math.pi,size=dof)
@@ -12,11 +17,6 @@ def build_RRT(q_init):
     # Returns 2 outputs
     # RRT = list showing parent node of each node/vertex in tree
     # joints = joint angles/configurations of each node in tree
-    
-    # Hyperparameters
-    K = 100 # no. of iterations
-    eps = 0.01
-    dof = 6
 
     # Create list to show parent nodes of each node/vertex
     RRT = []
@@ -33,7 +33,7 @@ def build_RRT(q_init):
     
     return RRT, joints
 
-def extend_RRT(q,RRT,joints,eps):
+def extend_RRT(RRT,q,joints):
     # Returns 3 outputs
     # status = 0 (Reached), 1 (Advanced) or 2 (Trapped)
     # RRT = list showing parent node of each node/vertex in tree
@@ -64,3 +64,9 @@ def extend_RRT(q,RRT,joints,eps):
             status = 1
 
     return status, RRT, joints
+
+def connect(RRT,q,joints):
+    status = 0
+    while status != 1:
+        status, RRT, joints = extend_RRT(RRT,q,joints)
+    return status
