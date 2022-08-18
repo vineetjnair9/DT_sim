@@ -20,6 +20,8 @@ class Visual3D:
     def plot_free(self, joint_pose: ArrayLike):
         point3D = fwd_kinematics(joint_pose)
         self._ax.scatter(*point3D)
+        
+    def show(self):
         plt.show()
     
     def plot_colliding(self, joint_pose: ArrayLike):

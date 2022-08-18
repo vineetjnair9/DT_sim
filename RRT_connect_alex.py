@@ -5,7 +5,7 @@ import numpy as np
 from numpy.typing import NDArray, ArrayLike
 from pylib import Communication
 from visual_3d import Visual3D
-com = Communication()
+#com = Communication()
 
 fig = Visual3D()
 
@@ -31,7 +31,7 @@ def nearest_neighbour(pose: NDArray, tree: RRT) -> int:
         dist = np.linalg.norm(node.pose-pose)
         
         if dist<min_dist:
-            min_dist = node
+            min_dist = dist
             min_idx = i
 
     return min_idx
@@ -70,8 +70,8 @@ def extend(tree: RRT, q_rand: NDArray, eps=0.01) -> State:
     return State.trapped
 
 def connect(tree: RRT, q: NDArray) -> State:
-    S = None
-    while S != State.advanced:
+    S = extend(tree, q)
+    while S == State.advanced:
         S = extend(tree, q)
     return S
 
@@ -94,7 +94,7 @@ def get_path(T_init: RRT, T_goal: RRT):
 
 
 
-def RRT_connect_planner(q_init: NDArray, q_goal: NDArray, max_iter: int=100):
+def RRT_connect_planner(q_init: NDArray, q_goal: NDArray, max_iter: int=1000) -> List[float]:
 
     T_a = [Node(q_init)]
     T_b = [Node(q_goal)]
@@ -103,16 +103,17 @@ def RRT_connect_planner(q_init: NDArray, q_goal: NDArray, max_iter: int=100):
     for _ in range(max_iter):
         q_rand = random_config(ndof)
         
-        if (not extend(T_a, q_rand) == State.trapped and
-        connect(T_b, T_a[-1].pose) == State.reached):                  
-                if T_a[0].pose != q_init:
-                    if T_b[0].pose != q_init:
+        if not extend(T_a, q_rand) == State.trapped:
+            if connect(T_b, T_a[-1].pose) == State.reached:                  
+                if not np.array_equal(T_a[0].pose, q_init):
+                    if not np.array_equal(T_b[0].pose, q_init):
                         raise ValueError  # for debugging, something is wrong in this case
                     T_a, T_b = T_b, T_a  # swap trees, so we pass in the right order to get_path()
+                fig.show()
                 return get_path(T_a, T_b)
         
         T_a, T_b = T_b, T_a  # swap the roles of the trees
-    
+    fig.show()
     print("algorithm failed")
     return 
 
@@ -121,6 +122,6 @@ def RRT_connect_planner(q_init: NDArray, q_goal: NDArray, max_iter: int=100):
 
 if __name__ == '__main__':
    q_init = np.zeros(6)
-   q_goal = np.ones(6)*2*np.pi
-   RRT_connect_planner(q_init, q_goal)
-   com._mainLoop(RRT_connect_planner)
+   q_goal = np.ones(6)*np.pi
+   print(RRT_connect_planner(q_init, q_goal))
+   #com._mainLoop(RRT_connect_planner)
