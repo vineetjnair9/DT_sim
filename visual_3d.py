@@ -21,9 +21,6 @@ class Visual3D:
     def plot_free(self, joint_pose: ArrayLike):
         point3D = fwd_kinematics(joint_pose)
         self._ax.scatter(*point3D)
-        self._ax.clf()
-        self._ax.show()
-        time.sleep(0.5)
         
         
     def show(self):
