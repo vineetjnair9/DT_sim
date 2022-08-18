@@ -68,7 +68,7 @@ def extend(tree: RRT, q_rand: NDArray, eps=0.1, savetofile: TextIO=None) -> Stat
         #save to file
         if savetofile:
             clearence = com.clearance(q_rand.tolist())
-            data_str = (str(q_rand)+", "+str(clearence)).replace('[', "").replace(']', "").replace(" ", ", ")
+            data_str = " ".join([str(x) for x in q_rand]) + " " + str(clearence) + "\n"
             savetofile.write(data_str)
         return State.reached
 
@@ -81,7 +81,7 @@ def extend(tree: RRT, q_rand: NDArray, eps=0.1, savetofile: TextIO=None) -> Stat
         #save to file
         if savetofile:
             clearence = com.clearance(advanced_pose.tolist())
-            data_str = (str(advanced_pose)+", "+str(clearence)).replace('[', "").replace(']', "").replace(" ", ", ")
+            data_str = " ".join([str(x) for x in advanced_pose]) + " " + str(clearence) + "\n"
             savetofile.write(data_str)
         return State.advanced
     
