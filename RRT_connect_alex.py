@@ -116,7 +116,8 @@ def get_path(T_init: RRT, T_goal: RRT):
 
 
 def RRT_connect_planner(q_init: NDArray, q_goal: NDArray, max_iter: int=10000) -> List[float]:
-
+    import time
+    t_start = time.time()
     T_a = [Node(q_init)]
     T_b = [Node(q_goal)]
 
@@ -134,6 +135,8 @@ def RRT_connect_planner(q_init: NDArray, q_goal: NDArray, max_iter: int=10000) -
                         T_a, T_b = T_b, T_a  # swap trees, so we pass in the right order to get_path()
                     path = get_path(T_a, T_b)
                     save_to_file(q_goal, 0, f)
+                    t_end = time.time()
+                    print('Time (min): ', (t_end - t_start)/60.0)
                     return path
             
             T_a, T_b = T_b, T_a  # swap the roles of the trees

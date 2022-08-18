@@ -60,6 +60,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits import mplot3d
 from mpl_toolkits.mplot3d import Axes3D
+import plotly.express as px
 
 
 
@@ -97,10 +98,13 @@ class Visual3D:
         # red = [255 0 0]
         #blue= [0 0 255]
         
-        color=[255*row[6]/diff,0,255*(diff-row[6])/diff]
-        cart_point=fwd_kinematics(row[0],row[1],row[2],row[3],row[4],row[5])
-        self.ax.scatter(cart_point[0],cart_point[1],cart_point[2],marker='o',c=color)
-
+        
+        # color1=np.array(color)
+        cart_point=fwd_kinematics([row[0],row[1],row[2],row[3],row[4],row[5]])
+        self.ax.scatter(cart_point[0],cart_point[1],cart_point[2],marker='o',c="red")
+        img = ax.scatter(x, y, z, c=c, cmap=plt.hot())
+        fig.colorbar(img)
+        plt.show()
 
 
     def show(self):
