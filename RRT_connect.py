@@ -2,6 +2,10 @@ import numpy as np
 import math
 from sklearn.neighbors import NearestNeighbors
 from pylib import Communication
+from typing import List
+JointValues = List[float]
+JointValuesList = List[JointValues]
+import pickle
 com = Communication()
 
 # Hyperparameters
@@ -90,28 +94,23 @@ def connect(RRT,joints,q):
         status, RRT, joints, q_new = extend_RRT(RRT,joints,q)
     return status, RRT, joints
 
+def traverse(RRT, joints, visited, node, path, poses):
+    while node != 0: # start point
+        if node not in visited:
+            visited.add(node)
+            path.append(node)
+            poses.append(joints[node])
+            visited, node, path, poses = traverse(RRT, joints, visited, RRT[node], path, poses)
+    return visited, node, path, poses
+
 def get_path(RRT, joints):
-    poses= []
+    visited = set()
+    node = RRT[-1] # end goal vertex
     path = []
-    current_node = RRT[-1] # goal node
-    path.append(current_node)
-
-    while current_node != 0:
+    poses = []
+    visited, node, path, poses = traverse(RRT, joints, visited, node, path, poses)
+    return path, poses
         
-    
-    # construct the path from connecting node to goal node
-    while current_node.parent_idx != None:
-        poses.append(current_node.pose.tolist())
-        current_node = T_goal[current_node.parent_idx]
-
-    # add the path from connecting node to init node to front of path
-    current_node = T_init[-2]  #-2 to not count the connecting node again
-    while current_node.parent_idx != None:
-        poses.insert(0, current_node.pose.tolist())
-        current_node = T_init[current_node.parent_idx]
-
-    return poses
-
 def RRT_connect_planner(q_init,q_goal):
     RRT_a, joints_a = build_RRT(q_init)
     RRT_b, joints_b = build_RRT(q_goal)
@@ -153,3 +152,43 @@ def RRT_connect_planner(q_init,q_goal):
 q_init = [-2.088896595860315, -2.017484530838456, -1.611079074071187, -0.07048029509520992, 0.5640853634948029, -1.093268836863869]
 q_goal = [-1.1862522062110772, -1.6803693959628347, -2.2637243080183618, -0.7820281405620721, 1.6033439459250105, 0.38341871361603497]
 RRT_connect_planner(q_init,q_goal)
+
+def compilePath(start: JointValues, stop: JointValues, savetofile=False) -> JointValuesList:
+
+    print('start = ', start)
+    print('stop = ', stop)
+    if len(start) != 6 or len(stop) != 6:
+        print('Array length mismatch')
+        return None
+
+    poseList = list()
+    poseList.append(start)
+
+    diff = [0] * 6
+    for index in range(6):
+        diff[index] = stop[index] - start[index]
+    m = max(diff)
+    steps = int(m / 0.1)
+
+    for step in range(steps):
+        jointValues = [0] * 6
+        percentage = step / steps
+        for index in range(6):
+            addValue = percentage * diff[index]
+            jointValues[index] = start[index] + addValue
+        hsCol = com.hasCollision(jointValues)
+        clr = com.clearance(jointValues)
+        print(hsCol, clr)
+        poseList.append(jointValues)
+
+    poseList.append(stop)
+    
+    # save the pose to file
+    if savetofile:
+        with open("Path", 'wb') as f:
+            pickle.dump(poseList, f)
+    
+    return poseList
+   
+if __name__ == '__main__':
+   com._mainLoop(compilePath)
