@@ -5,7 +5,7 @@ from pylib import Communication
 com = Communication()
 
 # Hyperparameters
-K = 5 # no. of iterations
+K = 10 # no. of iterations
 eps = 0.01
 dof = 6
 
@@ -13,7 +13,7 @@ def random_config(dof):
     rng = np.random.default_rng(seed=42)
     return rng.uniform(low=-math.pi,high=math.pi,size=dof)
 
-def build_RRT(q_init):
+def build_RRT(q):
     # Returns 2 outputs
     # RRT = list showing parent node of each node/vertex in tree
     # joints = joint angles/configurations of each node in tree
@@ -23,7 +23,7 @@ def build_RRT(q_init):
     joints = []
 
     # Starting point (root node)
-    joints.append(q_init)
+    joints.append(q)
     RRT.append(0) # parent of root is itself
 
     for k in range(K):
@@ -84,11 +84,33 @@ def extend_RRT(RRT,joints,q):
 
     return status, RRT, joints, q_new
 
-def connect(RRT,q,joints):
+def connect(RRT,joints,q):
     status = 0
     while status != 1:
         status, RRT, joints, q_new = extend_RRT(RRT,joints,q)
     return status, RRT, joints
+
+def get_path(RRT, joints):
+    poses= []
+    path = []
+    current_node = RRT[-1] # goal node
+    path.append(current_node)
+
+    while current_node != 0:
+        
+    
+    # construct the path from connecting node to goal node
+    while current_node.parent_idx != None:
+        poses.append(current_node.pose.tolist())
+        current_node = T_goal[current_node.parent_idx]
+
+    # add the path from connecting node to init node to front of path
+    current_node = T_init[-2]  #-2 to not count the connecting node again
+    while current_node.parent_idx != None:
+        poses.insert(0, current_node.pose.tolist())
+        current_node = T_init[current_node.parent_idx]
+
+    return poses
 
 def RRT_connect_planner(q_init,q_goal):
     RRT_a, joints_a = build_RRT(q_init)
@@ -106,9 +128,22 @@ def RRT_connect_planner(q_init,q_goal):
         if status1 != 2:
             status2, RRT2, joints2 = connect(RRT2,joints2,q_new)
             if status2 == 0:
-                RRT2 = RRT2 + len(RRT1)
-                RRT = RRT1 + RRT2
-                joints = joints1 + joints2
+
+                # Check which is tree A or B
+                if joints1[0] == q_init:
+                    RRT_a = RRT1
+                    RRT_b = RRT2
+                    joints_a = joints1
+                    joints_b = joints2
+                else:
+                    RRT_a = RRT2
+                    RRT_b = RRT1
+                    joints_a = joints2
+                    joints_b = joints1
+
+                RRT_b = RRT_a.reverse() + len(RRT_a)
+                RRT = RRT_a + RRT_b
+                joints = joints_a + joints_b.reverse
                 return RRT, joints
         RRT2 = RRT1
         joints2 = joints1
