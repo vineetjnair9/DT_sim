@@ -37,5 +37,6 @@ if __name__=="__main__":
     fig = Visual3D()
     pose = [0]*6
     fig.plot_free(pose)
+    print()
 
 
