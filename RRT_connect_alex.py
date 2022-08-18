@@ -23,7 +23,7 @@ class State(Enum):
 RRT = List[Node]
 
 def random_config(dim: int):
-    return (2*np.pi)*np.random.rand(dim)
+    return (2*np.pi)*np.random.rand(dim)-np.pi
 
 def nearest_neighbour(pose: NDArray, tree: RRT) -> int:
     
@@ -112,7 +112,7 @@ def get_path(T_init: RRT, T_goal: RRT):
 
 
 
-def RRT_connect_planner(q_init: NDArray, q_goal: NDArray, max_iter: int=1000) -> List[float]:
+def RRT_connect_planner(q_init: NDArray, q_goal: NDArray, max_iter: int=10000) -> List[float]:
 
     T_a = [Node(q_init)]
     T_b = [Node(q_goal)]
