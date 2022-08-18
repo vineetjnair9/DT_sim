@@ -40,15 +40,22 @@ def nearest_neighbour(pose: NDArray, tree: RRT) -> int:
 
 def new_config(q: NDArray, q_near: NDArray, eps) -> int:
 
-    if com.hasCollision(q.tolist()): #TODO switch this back after testing
-        return State.trapped
-    
     dist = np.linalg.norm(q-q_near)
     if dist<eps:
-        return State.reached
+        if com.hasCollision(q.tolist()): #TODO switch this back after testing
+            return State.trapped
+        else: 
+            return State.reached
     
-    else:
-        return State.advanced 
+    # calculating advancing direction and pose
+    diff = q - q_near
+    unit_dir = (diff)/np.linalg.norm(diff)
+    advanced_pose = q_near + eps*unit_dir
+    
+    if com.hasCollision(advanced_pose.tolist()):
+        return State.trapped
+
+    return State.advanced 
 
 def extend(tree: RRT, q_rand: NDArray, eps=0.1) -> State:
     
@@ -82,13 +89,13 @@ def get_path(T_init: RRT, T_goal: RRT):
     
     # construct the path from connecting node to goal node
     while current_node.parent_idx != None:
-        poses.append(current_node.pose)
+        poses.append(current_node.pose.tolist())
         current_node = T_goal[current_node.parent_idx]
 
     # add the path from connecting node to init node to front of path
     current_node = T_init[-2]  #-2 to not count the connecting node again
     while current_node.parent_idx != None:
-        poses.insert(0, current_node.pose)
+        poses.insert(0, current_node.pose.tolist())
         current_node = T_init[current_node.parent_idx]
 
     return poses
