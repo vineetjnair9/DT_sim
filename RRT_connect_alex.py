@@ -42,15 +42,15 @@ def save_to_file(pose: ArrayLike, dist: float, stream: TextIO):
     stream.write(data_str)
 
 
-def new_config(q: NDArray, q_near: NDArray, eps, savetofile=None) -> int:
+def new_config(q: NDArray, q_near: NDArray, eps, stream: TextIO=None) -> int:
 
     dist = np.linalg.norm(q-q_near)
     if dist<eps:
         
         #save to file
-        if savetofile:
+        if stream:
             clearence = com.clearance(q.tolist())
-            save_to_file(q, clearence, savetofile)
+            save_to_file(q, clearence, stream)
 
         if com.hasCollision(q.tolist()): #TODO switch this back after testing
             return State.trapped
@@ -63,19 +63,19 @@ def new_config(q: NDArray, q_near: NDArray, eps, savetofile=None) -> int:
     advanced_pose = q_near + eps*unit_dir
     
     #save to file
-    if savetofile:
+    if stream:
         clearence = com.clearance(advanced_pose.tolist())
-        save_to_file(advanced_pose, clearence, savetofile)
+        save_to_file(advanced_pose, clearence, stream)
 
     if com.hasCollision(advanced_pose.tolist()):
         return State.trapped
 
     return State.advanced 
 
-def extend(tree: RRT, q_rand: NDArray, eps=0.1, savetofile: TextIO=None) -> State:
+def extend(tree: RRT, q_rand: NDArray, eps=0.1, stream: TextIO=None) -> State:
     
     near_idx = nearest_neighbour(q_rand, tree)
-    state = new_config(q_rand, tree[near_idx].pose, eps, savetofile=savetofile)
+    state = new_config(q_rand, tree[near_idx].pose, eps, stream=stream)
 
     if state == State.reached:
         tree.append(Node(q_rand, near_idx))
@@ -91,9 +91,9 @@ def extend(tree: RRT, q_rand: NDArray, eps=0.1, savetofile: TextIO=None) -> Stat
     return State.trapped
 
 def connect(tree: RRT, q: NDArray, savetofile=None) -> State:
-    S = extend(tree, q, savetofile=savetofile)
+    S = extend(tree, q, stream=savetofile)
     while S == State.advanced:
-        S = extend(tree, q, savetofile=savetofile)
+        S = extend(tree, q, stream=savetofile)
     return S
 
 def get_path(T_init: RRT, T_goal: RRT):
@@ -122,16 +122,18 @@ def RRT_connect_planner(q_init: NDArray, q_goal: NDArray, max_iter: int=10000) -
 
     ndof = 6
     with open("poses.txt", 'w') as f:
+        save_to_file(q_init, 0, f)
         for _ in range(max_iter):
             q_rand = random_config(ndof)
             
-            if not extend(T_a, q_rand, savetofile=f) == State.trapped:
+            if not extend(T_a, q_rand, stream=f) == State.trapped:
                 if connect(T_b, T_a[-1].pose, savetofile=f) == State.reached:                  
                     if not np.array_equal(T_a[0].pose, q_init):
                         if not np.array_equal(T_b[0].pose, q_init):
                             raise ValueError  # for debugging, something is wrong in this case
                         T_a, T_b = T_b, T_a  # swap trees, so we pass in the right order to get_path()
                     path = get_path(T_a, T_b)
+                    save_to_file(q_goal, 0, f)
                     return path
             
             T_a, T_b = T_b, T_a  # swap the roles of the trees
