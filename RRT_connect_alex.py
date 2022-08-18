@@ -36,17 +36,21 @@ def nearest_neighbour(pose: NDArray, tree: RRT) -> int:
             min_idx = i
 
     return min_idx
-    
+
+def save_to_file(pose: ArrayLike, dist: float, stream: TextIO):
+    data_str = " ".join([str(x) for x in pose]) + " " + str(dist) + "\n"
+    stream.write(data_str)
+
 
 def new_config(q: NDArray, q_near: NDArray, eps, savetofile=None) -> int:
 
     dist = np.linalg.norm(q-q_near)
     if dist<eps:
+        
         #save to file
         if savetofile:
             clearence = com.clearance(q.tolist())
-            data_str = " ".join([str(x) for x in q]) + " " + str(clearence) + "\n"
-            savetofile.write(data_str)
+            save_to_file(q, clearence, save_to_file)
 
         if com.hasCollision(q.tolist()): #TODO switch this back after testing
             return State.trapped
@@ -61,8 +65,7 @@ def new_config(q: NDArray, q_near: NDArray, eps, savetofile=None) -> int:
     #save to file
     if savetofile:
         clearence = com.clearance(advanced_pose.tolist())
-        data_str = " ".join([str(x) for x in advanced_pose]) + " " + str(clearence) + "\n"
-        savetofile.write(data_str)
+        save_to_file(advanced_pose, clearence, save_to_file)
 
     if com.hasCollision(advanced_pose.tolist()):
         return State.trapped
@@ -83,18 +86,8 @@ def extend(tree: RRT, q_rand: NDArray, eps=0.1, savetofile: TextIO=None) -> Stat
         unit_dir = (diff)/np.linalg.norm(diff)
         advanced_pose = tree[near_idx].pose + eps*unit_dir
         tree.append(Node(advanced_pose, near_idx))
-        
-        #save to file
-        if savetofile:
-            clearence = com.clearance(advanced_pose.tolist())
-            data_str = " ".join([str(x) for x in advanced_pose]) + " " + str(clearence) + "\n"
-            savetofile.write(data_str)
         return State.advanced
-    
-    if savetofile:
-        clearence = com.clearance(advanced_pose.tolist())
-        data_str = " ".join([str(x) for x in advanced_pose]) + " " + str(clearence) + "\n"
-        savetofile.write(data_str)
+
     return State.trapped
 
 def connect(tree: RRT, q: NDArray, savetofile=None) -> State:
