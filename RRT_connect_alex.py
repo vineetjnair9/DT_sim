@@ -50,7 +50,7 @@ def new_config(q: NDArray, q_near: NDArray, eps, savetofile=None) -> int:
         #save to file
         if savetofile:
             clearence = com.clearance(q.tolist())
-            save_to_file(q, clearence, save_to_file)
+            save_to_file(q, clearence, savetofile)
 
         if com.hasCollision(q.tolist()): #TODO switch this back after testing
             return State.trapped
@@ -65,7 +65,7 @@ def new_config(q: NDArray, q_near: NDArray, eps, savetofile=None) -> int:
     #save to file
     if savetofile:
         clearence = com.clearance(advanced_pose.tolist())
-        save_to_file(advanced_pose, clearence, save_to_file)
+        save_to_file(advanced_pose, clearence, savetofile)
 
     if com.hasCollision(advanced_pose.tolist()):
         return State.trapped
