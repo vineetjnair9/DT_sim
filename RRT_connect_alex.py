@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from enum import Enum
-from typing import List
+from typing import List, TextIO
 import numpy as np
 from numpy.typing import NDArray, ArrayLike
 from fwd_kinematics import fwd_kinematics
@@ -57,14 +57,19 @@ def new_config(q: NDArray, q_near: NDArray, eps) -> int:
 
     return State.advanced 
 
-def extend(tree: RRT, q_rand: NDArray, eps=0.1) -> State:
+def extend(tree: RRT, q_rand: NDArray, eps=0.1, savetofile: TextIO=None) -> State:
     
     near_idx = nearest_neighbour(q_rand, tree)
     state = new_config(q_rand, tree[near_idx].pose, eps)
 
     if state == State.reached:
         tree.append(Node(q_rand, near_idx))
-        fig.plot_free(q_rand)
+        
+        #save to file
+        if savetofile:
+            clearence = com.clearance(q_rand)
+            data_str = (str(q_rand)+", "+str(clearence)).replace('[', "").replace(']', "").replace(" ", ", ")
+            savetofile.write(data_str)
         return State.reached
 
     elif state == State.advanced:
@@ -72,15 +77,20 @@ def extend(tree: RRT, q_rand: NDArray, eps=0.1) -> State:
         unit_dir = (diff)/np.linalg.norm(diff)
         advanced_pose = tree[near_idx].pose + eps*unit_dir
         tree.append(Node(advanced_pose, near_idx))
-        fig.plot_free(advanced_pose)
+        
+        #save to file
+        if savetofile:
+            clearence = com.clearance(advanced_pose)
+            data_str = (str(advanced_pose)+", "+str(clearence)).replace('[', "").replace(']', "").replace(" ", ", ")
+            savetofile.write(data_str)
         return State.advanced
     
     return State.trapped
 
-def connect(tree: RRT, q: NDArray) -> State:
-    S = extend(tree, q)
+def connect(tree: RRT, q: NDArray, savetofile=None) -> State:
+    S = extend(tree, q, savetofile=savetofile)
     while S == State.advanced:
-        S = extend(tree, q)
+        S = extend(tree, q, savetofile=savetofile)
     return S
 
 def get_path(T_init: RRT, T_goal: RRT):
@@ -106,22 +116,22 @@ def RRT_connect_planner(q_init: NDArray, q_goal: NDArray, max_iter: int=1000) ->
 
     T_a = [Node(q_init)]
     T_b = [Node(q_goal)]
+
     ndof = 6
-    
-    for _ in range(max_iter):
-        q_rand = random_config(ndof)
-        
-        if not extend(T_a, q_rand) == State.trapped:
-            if connect(T_b, T_a[-1].pose) == State.reached:                  
-                if not np.array_equal(T_a[0].pose, q_init):
-                    if not np.array_equal(T_b[0].pose, q_init):
-                        raise ValueError  # for debugging, something is wrong in this case
-                    T_a, T_b = T_b, T_a  # swap trees, so we pass in the right order to get_path()
-                path = get_path(T_a, T_b)
-                return path
-        
-        T_a, T_b = T_b, T_a  # swap the roles of the trees
-    fig.show()
+    with open("poses.txt", 'w') as f:
+        for _ in range(max_iter):
+            q_rand = random_config(ndof)
+            
+            if not extend(T_a, q_rand, savetofile=f) == State.trapped:
+                if connect(T_b, T_a[-1].pose, savetofile=f) == State.reached:                  
+                    if not np.array_equal(T_a[0].pose, q_init):
+                        if not np.array_equal(T_b[0].pose, q_init):
+                            raise ValueError  # for debugging, something is wrong in this case
+                        T_a, T_b = T_b, T_a  # swap trees, so we pass in the right order to get_path()
+                    path = get_path(T_a, T_b)
+                    return path
+            
+            T_a, T_b = T_b, T_a  # swap the roles of the trees
     print("algorithm failed")
     return 
 
