@@ -118,9 +118,6 @@ def RRT_connect_planner(q_init: NDArray, q_goal: NDArray, max_iter: int=1000) ->
                         raise ValueError  # for debugging, something is wrong in this case
                     T_a, T_b = T_b, T_a  # swap trees, so we pass in the right order to get_path()
                 path = get_path(T_a, T_b)
-                for point in path:
-                    fig._ax.scatter(*fwd_kinematics(point))
-                fig.show()
                 return path
         
         T_a, T_b = T_b, T_a  # swap the roles of the trees
