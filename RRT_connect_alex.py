@@ -3,9 +3,10 @@ from enum import Enum
 from typing import List
 import numpy as np
 from numpy.typing import NDArray, ArrayLike
+from fwd_kinematics import fwd_kinematics
 from pylib import Communication
 from visual_3d import Visual3D
-#com = Communication()
+com = Communication()
 
 fig = Visual3D()
 
@@ -39,7 +40,7 @@ def nearest_neighbour(pose: NDArray, tree: RRT) -> int:
 
 def new_config(q: NDArray, q_near: NDArray, eps) -> int:
 
-    if False: #com.hasCollision(q.tolist()): #TODO switch this back after testing
+    if com.hasCollision(q.tolist()): #TODO switch this back after testing
         return State.trapped
     
     dist = np.linalg.norm(q-q_near)
@@ -49,7 +50,7 @@ def new_config(q: NDArray, q_near: NDArray, eps) -> int:
     else:
         return State.advanced 
 
-def extend(tree: RRT, q_rand: NDArray, eps=0.01) -> State:
+def extend(tree: RRT, q_rand: NDArray, eps=0.1) -> State:
     
     near_idx = nearest_neighbour(q_rand, tree)
     state = new_config(q_rand, tree[near_idx].pose, eps)
@@ -109,8 +110,11 @@ def RRT_connect_planner(q_init: NDArray, q_goal: NDArray, max_iter: int=1000) ->
                     if not np.array_equal(T_b[0].pose, q_init):
                         raise ValueError  # for debugging, something is wrong in this case
                     T_a, T_b = T_b, T_a  # swap trees, so we pass in the right order to get_path()
+                path = get_path(T_a, T_b)
+                for point in path:
+                    fig._ax.scatter(*fwd_kinematics(point))
                 fig.show()
-                return get_path(T_a, T_b)
+                return path
         
         T_a, T_b = T_b, T_a  # swap the roles of the trees
     fig.show()
@@ -121,7 +125,8 @@ def RRT_connect_planner(q_init: NDArray, q_goal: NDArray, max_iter: int=1000) ->
 
 
 if __name__ == '__main__':
-   q_init = np.zeros(6)
-   q_goal = np.ones(6)*np.pi
-   print(RRT_connect_planner(q_init, q_goal))
-   #com._mainLoop(RRT_connect_planner)
+    com._mainLoop(RRT_connect_planner)
+   #q_init = np.zeros(6)
+   #q_goal = np.ones(6)*np.pi
+   #print(RRT_connect_planner(q_init, q_goal))
+   
