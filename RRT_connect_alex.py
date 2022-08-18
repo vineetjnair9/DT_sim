@@ -38,10 +38,16 @@ def nearest_neighbour(pose: NDArray, tree: RRT) -> int:
     return min_idx
     
 
-def new_config(q: NDArray, q_near: NDArray, eps) -> int:
+def new_config(q: NDArray, q_near: NDArray, eps, savetofile=None) -> int:
 
     dist = np.linalg.norm(q-q_near)
     if dist<eps:
+        #save to file
+        if savetofile:
+            clearence = com.clearance(q.tolist())
+            data_str = " ".join([str(x) for x in q]) + " " + str(clearence) + "\n"
+            savetofile.write(data_str)
+
         if com.hasCollision(q.tolist()): #TODO switch this back after testing
             return State.trapped
         else: 
@@ -52,6 +58,12 @@ def new_config(q: NDArray, q_near: NDArray, eps) -> int:
     unit_dir = (diff)/np.linalg.norm(diff)
     advanced_pose = q_near + eps*unit_dir
     
+    #save to file
+    if savetofile:
+        clearence = com.clearance(advanced_pose.tolist())
+        data_str = " ".join([str(x) for x in advanced_pose]) + " " + str(clearence) + "\n"
+        savetofile.write(data_str)
+
     if com.hasCollision(advanced_pose.tolist()):
         return State.trapped
 
@@ -60,16 +72,10 @@ def new_config(q: NDArray, q_near: NDArray, eps) -> int:
 def extend(tree: RRT, q_rand: NDArray, eps=0.1, savetofile: TextIO=None) -> State:
     
     near_idx = nearest_neighbour(q_rand, tree)
-    state = new_config(q_rand, tree[near_idx].pose, eps)
+    state = new_config(q_rand, tree[near_idx].pose, eps, savetofile=savetofile)
 
     if state == State.reached:
         tree.append(Node(q_rand, near_idx))
-        
-        #save to file
-        if savetofile:
-            clearence = com.clearance(q_rand.tolist())
-            data_str = " ".join([str(x) for x in q_rand]) + " " + str(clearence) + "\n"
-            savetofile.write(data_str)
         return State.reached
 
     elif state == State.advanced:
@@ -85,6 +91,10 @@ def extend(tree: RRT, q_rand: NDArray, eps=0.1, savetofile: TextIO=None) -> Stat
             savetofile.write(data_str)
         return State.advanced
     
+    if savetofile:
+        clearence = com.clearance(advanced_pose.tolist())
+        data_str = " ".join([str(x) for x in advanced_pose]) + " " + str(clearence) + "\n"
+        savetofile.write(data_str)
     return State.trapped
 
 def connect(tree: RRT, q: NDArray, savetofile=None) -> State:
